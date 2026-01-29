@@ -1,0 +1,72 @@
+package com.example.kidslearning.service.impl;
+
+import com.example.kidslearning.dto.ChapterDto;
+import com.example.kidslearning.entity.Chapter;
+import com.example.kidslearning.entity.Subject;
+import com.example.kidslearning.exception.ResourceNotFoundException;
+import com.example.kidslearning.repository.ChapterRepository;
+import com.example.kidslearning.repository.SubjectRepository;
+import com.example.kidslearning.service.ChapterService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ChapterServiceImpl implements ChapterService {
+
+    private final ChapterRepository chapterRepository;
+    private final SubjectRepository subjectRepository;
+
+    @Override
+    public ChapterDto createChapter(ChapterDto chapterDto) {
+        Subject subject = subjectRepository.findById(chapterDto.getSubjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id " + chapterDto.getSubjectId()));
+
+        Chapter chapter = new Chapter();
+        chapter.setTitle(chapterDto.getTitle());
+        chapter.setSubject(subject);
+
+        Chapter saved = chapterRepository.save(chapter);
+        return mapToDto(saved);
+    }
+
+    @Override
+    public List<ChapterDto> getChaptersBySubject(Long subjectId) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id " + subjectId));
+
+        return chapterRepository.findBySubject(subject).stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ChapterDto getChapterById(Long id) {
+        Chapter chapter = chapterRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id " + id));
+        return mapToDto(chapter);
+    }
+
+    @Override
+    public void deleteChapter(Long id) {
+        if (!chapterRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Chapter not found with id " + id);
+        }
+        chapterRepository.deleteById(id);
+    }
+
+    private ChapterDto mapToDto(Chapter chapter) {
+        ChapterDto dto = new ChapterDto();
+        dto.setId(chapter.getId());
+        dto.setTitle(chapter.getTitle());
+        if (chapter.getSubject() != null) {
+            dto.setSubjectId(chapter.getSubject().getId());
+        }
+        return dto;
+    }
+}
+
+
