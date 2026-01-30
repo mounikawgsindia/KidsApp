@@ -1,5 +1,6 @@
 package com.example.kidslearning.service.impl;
 
+import com.example.kidslearning.dto.KidDto;
 import com.example.kidslearning.dto.LoginRequestDto;
 import com.example.kidslearning.dto.UserDto;
 import com.example.kidslearning.entity.User;
@@ -25,7 +26,6 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());
         User saved = userRepository.save(user);
         return mapToDto(saved);
     }
@@ -77,10 +77,9 @@ public class UserServiceImpl implements UserService {
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
-        dto.setPassword(user.getPassword());
         if (user.getKids() != null) {
-            dto.setKidIds(user.getKids().stream()
-                    .map(k -> k.getId())
+            dto.setKids(user.getKids().stream()
+                    .map(KidDto::fromEntity)
                     .collect(Collectors.toList()));
         }
         return dto;

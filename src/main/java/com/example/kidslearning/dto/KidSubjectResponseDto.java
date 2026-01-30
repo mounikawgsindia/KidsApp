@@ -1,0 +1,16 @@
+package com.example.kidslearning.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class KidSubjectResponseDto {
+    private Long kidId;
+    private String kidName;
+    private List<SubjectDto> subjects;
+}

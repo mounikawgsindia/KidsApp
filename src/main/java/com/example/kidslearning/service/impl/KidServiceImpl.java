@@ -1,15 +1,20 @@
 package com.example.kidslearning.service.impl;
 
 import com.example.kidslearning.dto.KidDto;
+import com.example.kidslearning.dto.SubjectDto;
 import com.example.kidslearning.entity.Kid;
+import com.example.kidslearning.entity.Subject;
 import com.example.kidslearning.entity.User;
 import com.example.kidslearning.exception.ResourceNotFoundException;
 import com.example.kidslearning.repository.KidRepository;
+import com.example.kidslearning.repository.SubjectRepository;
 import com.example.kidslearning.repository.UserRepository;
 import com.example.kidslearning.service.KidService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +24,7 @@ public class KidServiceImpl implements KidService {
 
     private final KidRepository kidRepository;
     private final UserRepository userRepository;
+    private final SubjectRepository subjectRepository;
 
     @Override
     public KidDto createKid(KidDto kidDto) {
@@ -59,6 +65,22 @@ public class KidServiceImpl implements KidService {
         kidRepository.deleteById(id);
     }
 
+    @Transactional
+    public void removeSubjectFromKid(Long kidId, Long subjectId) {
+        Kid kid = kidRepository.findById(kidId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kid not found"));
+
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+
+        // Remove relationship
+        kid.getSubjects().remove(subject);
+        subject.getKids().remove(kid);
+
+        // Save the kid (subject side will be updated automatically due to mappedBy)
+        kidRepository.save(kid);
+    }
+
     private KidDto mapToDto(Kid kid) {
         KidDto dto = new KidDto();
         dto.setId(kid.getId());
@@ -67,6 +89,16 @@ public class KidServiceImpl implements KidService {
         if (kid.getParent() != null) {
             dto.setParentId(kid.getParent().getId());
         }
+        // ✅ Map subjects
+        if (kid.getSubjects() != null && !kid.getSubjects().isEmpty()) {
+            List<SubjectDto> subjectList = kid.getSubjects().stream()
+                    .map(s -> new SubjectDto(s.getId(), s.getName()))
+                    .collect(Collectors.toList());
+            dto.setSubjects(subjectList);
+        } else {
+            dto.setSubjects(new ArrayList<>()); // prevent null
+        }
+
         return dto;
     }
 }

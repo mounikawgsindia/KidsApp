@@ -9,7 +9,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "kids")
@@ -37,6 +39,16 @@ public class Kid {
 
     @OneToMany(mappedBy = "kid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Progress> progressList = new ArrayList<>();
+
+
+    //another table
+    @ManyToMany
+    @JoinTable(
+            name = "kid_subject",
+            joinColumns = @JoinColumn(name = "kid_id"),
+            inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
+    private Set<Subject> subjects = new HashSet<>();
 }
 
 

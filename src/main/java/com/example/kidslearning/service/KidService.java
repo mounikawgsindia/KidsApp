@@ -13,6 +13,7 @@ public interface KidService {
     KidDto getKidById(Long id);
 
     void deleteKid(Long id);
+    void removeSubjectFromKid(Long kidId, Long subjectId);
 }
 
 
